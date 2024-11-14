@@ -1,5 +1,4 @@
-use chip8::chip8::Chip8;
-use chip8::constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
+use chip8::constants::DISPLAY_WIDTH;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
