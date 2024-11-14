@@ -337,6 +337,7 @@ impl Chip8 {
             }
             (_, _, _, _) => {
                 println!("Unimplemented opcode: {:#04x}", opcode)
+                // unimplemented!("Unimplemented opcode: {:#04x}", opcode)
             }
         }
     }
