@@ -1,9 +1,16 @@
 use std::usize;
 
+use rand::Rng;
+
 use crate::{
     chip8::Chip8,
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
 };
+
+/*
+TODO LIST: (not implemented yet)
+EX9E, EXA1, FX0A, FX29
+*/
 
 impl Chip8 {
     pub fn execute(&mut self, opcode: u16) {
@@ -170,6 +177,18 @@ impl Chip8 {
             (0xA, _, _, _) => {
                 let value = opcode & 0xFFF;
                 self.ireg = value;
+            }
+            // BNNN variation (not BXNN - so it wont support those ROM's)
+            (0xB, _, _, _) => {
+                let nnn = opcode & 0xFFF;
+                self.program_counter = (self.vregs[0] as u16) + nnn;
+            }
+            // CXNN
+            (0xC, _, _, _) => {
+                let x = second_digit as usize;
+                let nn = (opcode & 0xFF) as u8;
+                let rng: u8 = rand::thread_rng().gen();
+                self.vregs[x] = rng & nn;
             }
             // display dxyn
             (0xD, _, _, _) => {
