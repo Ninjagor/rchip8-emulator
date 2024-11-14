@@ -53,6 +53,10 @@ impl Chip8 {
         }
     }
 
+    pub fn keypress(&mut self, idx: usize, pressed: bool) {
+        self.keyboard[idx] = pressed;
+    }
+
     pub fn get_display(&self) -> &[bool] {
         &self.display
     }

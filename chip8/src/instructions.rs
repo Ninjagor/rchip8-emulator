@@ -7,11 +7,6 @@ use crate::{
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
 };
 
-/*
-TODO LIST: (not implemented yet)
-EX9E, EXA1, FX0A, FX29
-*/
-
 impl Chip8 {
     pub fn execute(&mut self, opcode: u16) {
         let first_digit = (opcode & 0xF000) >> 12;
@@ -33,6 +28,9 @@ impl Chip8 {
                 let last_addr = self.stack[self.stack_pointer as usize];
 
                 self.program_counter = last_addr;
+            }
+            (0, 0, _, _) => {
+                // unsupported 0x0 0x0 opcode
             }
             // set pc to addr
             (1, _, _, _) => {
@@ -232,11 +230,44 @@ impl Chip8 {
                     self.display_flag = false;
                 }
             }
+            (0xE, _, 9, 0xE) => {
+                let x = second_digit as usize;
+                let vx = self.vregs[x];
+                let key = self.keyboard[vx as usize];
+                if key {
+                    self.program_counter += 2;
+                }
+            }
+            // SKIP KEY RELEASE
+            (0xE, _, 0xA, 1) => {
+                let x = second_digit as usize;
+                let vx = self.vregs[x];
+                let key = self.keyboard[vx as usize];
+                if !key {
+                    self.program_counter += 2;
+                }
+            }
             // FX07
             (0xF, _, 0, 7) => {
                 let x = second_digit as usize;
 
                 self.vregs[x] = self.delay_timer;
+            }
+            //  FX0A
+            (0xF, _, 0, 0xA) => {
+                let x = second_digit as usize;
+                let mut pressed = false;
+                for i in 0..self.keyboard.len() {
+                    if self.keyboard[i] {
+                        self.vregs[x] = i as u8;
+                        pressed = true;
+                        break;
+                    }
+                }
+
+                if !pressed {
+                    self.program_counter -= 2;
+                }
             }
             // FX15
             (0xF, _, 1, 5) => {
@@ -255,6 +286,12 @@ impl Chip8 {
                 let x = second_digit as usize;
 
                 self.ireg = self.ireg.wrapping_add(self.vregs[x].into());
+            }
+            // FX28
+            (0xF, _, 2, 9) => {
+                let x = second_digit as usize;
+                let c = self.vregs[x] as u16;
+                self.ireg = c * 5;
             }
             // FX33
             (0xF, _, 3, 3) => {
@@ -299,7 +336,7 @@ impl Chip8 {
                 }
             }
             (_, _, _, _) => {
-                // todo!("Unimplemented opcode: {:#04x}", opcode)
+                println!("Unimplemented opcode: {:#04x}", opcode)
             }
         }
     }
